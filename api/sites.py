@@ -8,11 +8,12 @@ from schemas.site import SiteCreate, SiteResponse
 
 router = APIRouter(prefix="/sites", tags=["Sites"])
 
-# ЭНДПОИНТ 1: Добавление нового сайта в таблицу 'sites'
+# 1: Добавление нового сайта в таблицу 'sites'
 @router.post("/", response_model=SiteResponse, status_code=status.HTTP_201_CREATED)
 async def create_site(site_data: SiteCreate, db: AsyncSession = Depends(get_db)):
+    url = str(site_data.url).rstrip("/")
     # 1. Проверяем, нет ли уже такого сайта в базе
-    query = select(Site).where(Site.url == str(site_data.url))
+    query = select(Site).where(Site.url == url)
     result = await db.execute(query)
     existing_site = result.scalar_one_or_none()
 
@@ -22,16 +23,10 @@ async def create_site(site_data: SiteCreate, db: AsyncSession = Depends(get_db))
             detail="Этот сайт уже добавлен в систему мониторинга"
         )
 
-    # 2. Создаем объект модели SQLAlchemy из Pydantic-данных
-    new_site = Site(
-        url=str(site_data.url),
-        description=site_data.description
-    )
+    new_site = Site(url=url, description=site_data.description)
 
-    # 3. Добавляем объект в сессию (подготовка к записи)
     db.add(new_site)
 
-    # 4. Фиксируем изменения в PostgreSQL (физическая запись строки)
     await db.commit()
 
     # 5. Обновляем объект, чтобы получить его ID, сгенерированный базой
@@ -40,7 +35,7 @@ async def create_site(site_data: SiteCreate, db: AsyncSession = Depends(get_db))
     return new_site
 
 
-# ЭНДПОИНТ 2: Получение списка всех сайтов
+# 2: Получение списка всех сайтов
 @router.get("/", response_model=list[SiteResponse])
 async def get_all_sites(db: AsyncSession = Depends(get_db)):
     query = select(Site).order_by(Site.created_at.desc())

@@ -3,7 +3,6 @@ from sqlalchemy import String, Integer, Float, Boolean, ForeignKey, DateTime, fu
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
 
-# 1. Таблица сайтов, которые добавил пользователь
 class Site(Base):
     __tablename__ = "sites"
 
@@ -19,16 +18,16 @@ class Site(Base):
         "SiteCheckLog", back_populates="site", cascade="all, delete-orphan", lazy="selectin"
     )
 
-# 2. Таблица логов (результатов) проверок Celery-воркером
+# Таблица логов (результатов) проверок Celery-воркером
 class SiteCheckLog(Base):
     __tablename__ = "site_check_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     site_id: Mapped[int] = mapped_column(Integer, ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
     
-    status_code: Mapped[int] = mapped_column(Integer, nullable=False) # Например, 200 или 500
-    response_time: Mapped[float] = mapped_column(Float, nullable=False) # Время ответа в секундах
-    is_available: Mapped[bool] = mapped_column(Boolean, nullable=False) # Доступен/упал
+    status_code: Mapped[int] = mapped_column(Integer, nullable=False)
+    response_time: Mapped[float] = mapped_column(Float, nullable=False)
+    is_available: Mapped[bool] = mapped_column(Boolean, nullable=False)
     checked_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     # Обратная связь с сайтом
