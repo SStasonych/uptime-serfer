@@ -16,7 +16,7 @@ class SiteCreate(BaseModel):
 
 class SiteResponse(BaseModel):
     id: int
-    url: str  # В ответе отдаем как строку для удобства фронтенда
+    url: str
     description: str | None
     is_active: bool
     created_at: datetime
